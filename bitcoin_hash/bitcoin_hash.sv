@@ -26,6 +26,4 @@ parameter int k[64] = '{
 
 
 
-
-
 endmodule
