@@ -155,6 +155,10 @@ begin
         state <= READ;
 
        end
+
+       else begin
+         state <= IDLE; 
+       end
     end
 
     READ: begin
