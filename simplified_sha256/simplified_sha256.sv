@@ -29,7 +29,6 @@ logic [512:0] memory_block;
 logic [ 7:0] tstep;
 
 // local variables
-logic [31:0] S1, S0;
 logic [1:0] current_block;
 
 // SHA256 K constants
@@ -56,13 +55,14 @@ function logic [15:0] determine_num_blocks(input logic [31:0] size);
   logic [15:0] blocks;
   // Student to add function implementation
 
-  blocks = size / 512; // if 640, blocks = 1
 
-  if ((size % 512) != 0) begin
+  if (((size * 32) % 512) != 0) begin
+    blocks = ((size * 32) / 512); // if 640, blocks = 1
     determine_num_blocks = blocks + 1; // then blocks = 2 (desired number)
   end
 
   else begin
+    blocks = ((size * 32) / 512); // if 640, blocks = 1
     determine_num_blocks = blocks;
   end
 
@@ -139,14 +139,14 @@ begin
         h6 <= 32'h1f83d9ab;
         h7 <= 32'h5be0cd19;
 
-        a <= 32'h6a09e667;
-        b <= 32'hbb67ae85;
-        c <= 32'h3c6ef372;
-        d <= 32'ha54ff53a;
-        e <= 32'h510e527f;
-        f <= 32'h9b05688c;
-        g <= 32'h1f83d9ab;
-        h <= 32'h5be0cd19;
+        a <= 0;
+        b <= 0;
+        c <= 0;
+        d <= 0;
+        e <= 0;
+        f <= 0;
+        g <= 0;
+        h <= 0;
 
         // assign and initialize variables
         current_block <= 0;
@@ -193,11 +193,12 @@ begin
 	// Fetch message in 512-bit block size
 	// For each of 512-bit block initiate hash value computation
 
+      logic [31:0] s1, s0;
       // assign i before compute
       i <= 0;
 
       // 2 blocks computed, go to write state
-      if (current_block == 2) begin
+      if (current_block == num_blocks) begin
         state <= WRITE;
       end
 
@@ -214,9 +215,9 @@ begin
           end 
         
           else begin
-            S0 <= rightrotate(w[t-15], 7) ^ rightrotate(w[t-15], 18) ^ (w[t-15] >> 3);
-            S1 <= rightrotate(w[t-2], 17) ^ rightrotate(w[t-2], 19) ^ (w[t-2] >> 10);
-            w[t] <= w[t-16] + S0 + w[t-7] + S1;
+            s0 <= rightrotate(w[t-15], 7) ^ rightrotate(w[t-15], 18) ^ (w[t-15] >> 3);
+            s1 <= rightrotate(w[t-2], 17) ^ rightrotate(w[t-2], 19) ^ (w[t-2] >> 10);
+            w[t] <= w[t-16] + s0 + w[t-7] + s1;
           end
         end  
 
@@ -251,9 +252,9 @@ begin
           end 
         
           else begin
-            S0 <= rightrotate(w[t-15], 7) ^ rightrotate(w[t-15], 18) ^ (w[t-15] >> 3);
-            S1 <= rightrotate(w[t-2], 17) ^ rightrotate(w[t-2], 19) ^ (w[t-2] >> 10);
-            w[t] <= w[t-16] + S0 + w[t-7] + S1;
+            s0 <= rightrotate(w[t-15], 7) ^ rightrotate(w[t-15], 18) ^ (w[t-15] >> 3);
+            s1 <= rightrotate(w[t-2], 17) ^ rightrotate(w[t-2], 19) ^ (w[t-2] >> 10);
+            w[t] <= w[t-16] + s0 + w[t-7] + s1;
           end
         end  
 
