@@ -213,12 +213,12 @@ begin
          w[i] = message[i+16];
         end
 
-        w[20] = 32'h80000000;
-        for (int m = 21; m < 31; m++) begin
+        w[4] = 32'h80000000;
+        for (int m = 5; m < 15; m++) begin
             w[m] = 32'h00000000;
         end
-
-        w[31] = 32'd640;
+      
+        w[15] = 32'd640;
 
 
         // compute
