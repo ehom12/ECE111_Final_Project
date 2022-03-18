@@ -218,8 +218,8 @@ begin
     // there are still number of message blocks available in memory otherwise
     // move to WRITE stage
     COMPUTE: begin
-      // word expansion
 
+      // word expansion
       logic [31:0] S1, S0;
 
       for (int t = 0; t < 64; t++) begin
@@ -263,7 +263,7 @@ begin
     WRITE: begin
 
       // write enable
-      cur_we <= 1;
+      cur_we <= 1'b1;
 
       // from slides
 
@@ -291,8 +291,12 @@ begin
       mem_addr <= output_addr + 7;
       cur_write_data <= h7;
 
+      state <= IDLE;
+
     end
+    
    endcase
+
   end
 
 // Generate done when SHA256 hash computation has finished and moved to IDLE state
