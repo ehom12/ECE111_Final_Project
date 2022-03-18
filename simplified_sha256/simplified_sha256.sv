@@ -210,7 +210,7 @@ begin
         
         // pad first
         for (int i = 0; i < 4; i ++) begin
-         w[t] = message[i+16];
+         w[i] = message[i+16];
         end
 
         w[20] = 32'h80000000;
