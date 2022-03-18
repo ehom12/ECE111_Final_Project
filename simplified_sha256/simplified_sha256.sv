@@ -275,6 +275,7 @@ begin
 
         // use tstep because non blocking assignments get values after current cycle
         if (tstep < 0) begin
+          i <= i + 1;
           state <= COMPUTE;
         end
 
