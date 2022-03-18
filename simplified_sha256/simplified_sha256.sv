@@ -78,7 +78,7 @@ function logic [255:0] sha256_op(input logic [31:0] a, b, c, d, e, f, g, h, w,
     // Student to add remaning code below
     // Refer to SHA256 discussion slides to get logic for this function
     ch = (e & f) ^ ((~ e) & g);
-    t1 = h + S1 + ch + k[t] + w[t];
+    t1 = h + S1 + ch + k[t] + w;
     S0 = rightrotate(a, 2) ^ rightrotate(a, 13) ^ rightrotate (a, 22);
     maj = (a & b) ^ (a & c) ^ (b & c);
     t2 = S0 + maj;
@@ -198,8 +198,8 @@ begin
       // first block (first 16 words in w array)
       else if (current_block == 0) begin
         // compute
-        for (int i = 0; i < 16; i++) begin
-          w[i] <= message[i];
+        for (int t = 0; t < 16; t++) begin
+          w[t] <= message[t];
         end
 
         state <= COMPUTE;
@@ -209,17 +209,20 @@ begin
       else begin
         
         // pad first
-        for (int i = 0; i < 4; i ++) begin
-         w[i] = message[i+16];
+        for (int t = 0; t < 4; t++) begin
+         w[t] <= message[t+16];
         end
 
-        w[4] = 32'h80000000;
+        // add 1 after msg
+        w[4] <= 32'h80000000;
+
+        // 0 padding
         for (int m = 5; m < 15; m++) begin
-            w[m] = 32'h00000000;
+            w[m] <= 32'h00000000;
         end
       
-        w[15] = 32'd640;
-
+        // size
+        w[15] <= 32'd640;
 
         // compute
         state <= COMPUTE;
@@ -238,13 +241,13 @@ begin
 
       for (int t = 0; t < 64; t++) begin
         if (t < 16) begin
-          w[t] = w[t];
+          w[t] <= w[t];
         end 
         
         else begin
-          S0 = rightrotate(w[t-15], 7) ^ rightrotate(w[t-15], 18) ^ (w[t-15] >> 3);
-          S1 = rightrotate(w[t-2], 17) ^ rightrotate(w[t-2], 19) ^ (w[t-2] >> 10);
-          w[t] = w[t-16] + S0 + w[t-7] + S1;
+          S0 <= rightrotate(w[t-15], 7) ^ rightrotate(w[t-15], 18) ^ (w[t-15] >> 3);
+          S1 <= rightrotate(w[t-2], 17) ^ rightrotate(w[t-2], 19) ^ (w[t-2] >> 10);
+          w[t] <= w[t-16] + S0 + w[t-7] + S1;
         end
       end  
 
@@ -281,28 +284,28 @@ begin
 
       // from slides
 
-      mem_addr <= output_addr;
+      cur_addr <= output_addr;
       cur_write_data <= h0;
 
-      mem_addr <= output_addr + 1;
+      cur_addr <= output_addr + 1;
       cur_write_data <= h1;
 
-      mem_addr <= output_addr + 2;
+      cur_addr <= output_addr + 2;
       cur_write_data <= h2;
 
-      mem_addr <= output_addr + 3;
+      cur_addr <= output_addr + 3;
       cur_write_data <= h3;
 
-      mem_addr <= output_addr + 4;
+      cur_addr <= output_addr + 4;
       cur_write_data <= h4;
 
-      mem_addr <= output_addr + 5 ;
+      cur_addr <= output_addr + 5;
       cur_write_data <= h5;
 
-      mem_addr <= output_addr + 6 ;
+      cur_addr <= output_addr + 6;
       cur_write_data <= h6;
 
-      mem_addr <= output_addr + 7;
+      cur_addr <= output_addr + 7;
       cur_write_data <= h7;
 
       state <= IDLE;
