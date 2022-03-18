@@ -197,8 +197,11 @@ begin
 
       // first block (first 16 words in w array)
       else if (current_block == 0) begin
-        
         // compute
+        for (int i = 0; i < 16; i++) begin
+          w[t] <= message[i];
+        end
+
         state <= COMPUTE;
       end
 
@@ -206,6 +209,17 @@ begin
       else begin
         
         // pad first
+        for (int i = 0; i < 4; i ++) begin
+         w[t] = message[i+16];
+        end
+
+        w[20] = 32'h80000000;
+        for (m = 21; m < 31; m++) begin
+            w[m] = 32'h00000000;
+        end
+
+        w[31] = 32'd640;
+
 
         // compute
         state <= COMPUTE;
@@ -224,7 +238,7 @@ begin
 
       for (int t = 0; t < 64; t++) begin
         if (t < 16) begin
-          w[t] = message[t];
+          w[t] = w[t];
         end 
         
         else begin
@@ -294,7 +308,7 @@ begin
       state <= IDLE;
 
     end
-    
+
    endcase
 
   end
