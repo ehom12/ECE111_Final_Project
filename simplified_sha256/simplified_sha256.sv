@@ -50,7 +50,7 @@ assign tstep = (i - 1);
 // Function to determine number of blocks in memory to fetch
 function logic [15:0] determine_num_blocks(input logic [31:0] size);
 
-  // cant hardcode 2 
+  // cant hardcode the value "2" 
   logic [15:0] blocks;
   // Student to add function implementation
 
@@ -199,7 +199,7 @@ begin
       else if (current_block == 0) begin
         // compute
         for (int i = 0; i < 16; i++) begin
-          w[t] <= message[i];
+          w[i] <= message[i];
         end
 
         state <= COMPUTE;
@@ -214,7 +214,7 @@ begin
         end
 
         w[20] = 32'h80000000;
-        for (m = 21; m < 31; m++) begin
+        for (int m = 21; m < 31; m++) begin
             w[m] = 32'h00000000;
         end
 
