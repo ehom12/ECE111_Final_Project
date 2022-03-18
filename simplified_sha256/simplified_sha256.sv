@@ -66,8 +66,8 @@ function logic [15:0] determine_num_blocks(input logic [31:0] size);
 
 endfunction
 
-
 // SHA256 hash round
+
 // code from slides
 function logic [255:0] sha256_op(input logic [31:0] a, b, c, d, e, f, g, h, w,
                                  input logic [7:0] t);
@@ -147,10 +147,12 @@ begin
 
         // assign and initialize variables
         current_block <= 0;
-        cur_addr <= 0;
-        cur_we <= 0;
-        cur_write_data <= 0;
+
+        // https://piazza.com/class/kxt74scerj075n?cid=427
         offset <= 0; 
+        cur_addr <= message_addr;
+        cur_we <= 1'b0;
+        cur_write_data <= 32'h0;
 
         state <= READ;
 
@@ -162,9 +164,22 @@ begin
     end
 
     READ: begin
-      
+      // https://piazza.com/class/kxt74scerj075n?cid=427
+      if(offset < 20) begin  
+        // Read message word from testbench memory and store it in message array in chunks of 32 bits
+        // mem_read_data will have 32 bits of message word which is coming from dpsram memory in testbench
+        // using "offset" index variable, store 32-bit message word in each "message" array location.    
+        message[offset] <= mem_read_data;
+        // Increment memory address to fetch next block 
+        offset <= offset + 1;
+        // continue to set mem_we = 0 to read memory until all 20 words are read
+        cur_we <= 1'b0; 
+        state <= READ;
+      end
 
-      state <= BLOCK;
+      else begin
+        state <= BLOCK;
+      end
 
     end
 
@@ -246,33 +261,35 @@ begin
     // h0 to h7 after compute stage has final computed hash value
     // write back these h0 to h7 to memory starting from output_addr
     WRITE: begin
+
+      // write enable
       cur_we <= 1;
 
       // from slides
 
       mem_addr <= output_addr;
-      mem_write_data <= h0;
+      cur_write_data <= h0;
 
       mem_addr <= output_addr + 1;
-      mem_write_data <= h1;
+      cur_write_data <= h1;
 
       mem_addr <= output_addr + 2;
-      mem_write_data <= h2;
+      cur_write_data <= h2;
 
       mem_addr <= output_addr + 3;
-      mem_write_data <= h3;
+      cur_write_data <= h3;
 
       mem_addr <= output_addr + 4;
-      mem_write_data <= h4;
+      cur_write_data <= h4;
 
       mem_addr <= output_addr + 5 ;
-      mem_write_data <= h5;
+      cur_write_data <= h5;
 
       mem_addr <= output_addr + 6 ;
-      mem_write_data <= h6;
+      cur_write_data <= h6;
 
       mem_addr <= output_addr + 7;
-      mem_write_data <= h7;
+      cur_write_data <= h7;
 
     end
    endcase
