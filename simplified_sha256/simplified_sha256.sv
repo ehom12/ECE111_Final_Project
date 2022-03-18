@@ -150,7 +150,7 @@ begin
     COMPUTE: begin
 	// 64 processing rounds steps for 512-bit block 
         if (i <= 64) begin
-            {a, b, c, d, e, f, g, h} <= sha256_op (a, b, c, d, e, f, g, h, w, k[t]);
+            {a, b, c, d, e, f, g, h} <= sha256_op (a, b, c, d, e, f, g, h, w, k);
             
 
 
