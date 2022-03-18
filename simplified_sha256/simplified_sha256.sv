@@ -28,6 +28,8 @@ logic [31:0] cur_write_data;
 logic [512:0] memory_block;
 logic [ 7:0] tstep;
 
+logic [1:0] current_block;
+
 // SHA256 K constants
 parameter int k[0:63] = '{
    32'h428a2f98,32'h71374491,32'hb5c0fbcf,32'he9b5dba5,32'h3956c25b,32'h59f111f1,32'h923f82a4,32'hab1c5ed5,
@@ -48,16 +50,30 @@ assign tstep = (i - 1);
 // Function to determine number of blocks in memory to fetch
 function logic [15:0] determine_num_blocks(input logic [31:0] size);
 
+  // cant hardcode 2 
+  logic [15:0] blocks;
   // Student to add function implementation
+
+  blocks = size / 512; // if 640, blocks = 1
+
+  if ((size % 512) != 0) begin
+    determine_num_blocks = blocks + 1; // then blocks = 2 (desired number)
+  end
+
+  else begin
+    determine_num_blocks = blocks;
+  end
 
 endfunction
 
 
 // SHA256 hash round
+// code from slides
 function logic [255:0] sha256_op(input logic [31:0] a, b, c, d, e, f, g, h, w,
                                  input logic [7:0] t);
     logic [31:0] S1, S0, ch, maj, t1, t2; // internal signals
-begin
+  begin
+
     S1 = rightrotate(e, 6) ^ rightrotate(e, 11) ^ rightrotate(e, 25);
     // Student to add remaning code below
     // Refer to SHA256 discussion slides to get logic for this function
@@ -67,7 +83,7 @@ begin
     maj = (a & b) ^ (a & c) ^ (b & c);
     t2 = S0 + maj;
     sha256_op = {t1 + t2, a, b, c, d + t1, e, f, g};
-end
+  end
 endfunction
 
 
@@ -109,6 +125,8 @@ begin
     IDLE: begin 
        if(start) begin
        // Student to add rest of the code  
+
+       // initial hash values
         h0 <= 32'h6a09e667;
         h1 <= 32'hbb67ae85;
         h2 <= 32'h3c6ef372;
@@ -127,9 +145,23 @@ begin
         g <= 32'h1f83d9ab;
         h <= 32'h5be0cd19;
 
+        // assign and initialize variables
+        current_block <= 0;
+        cur_addr <= 0;
+        cur_we <= 0;
+        cur_write_data <= 0;
+        offset <= 0; 
 
+        state <= READ;
 
        end
+    end
+
+    READ: begin
+      
+
+      state <= BLOCK;
+
     end
 
     // SHA-256 FSM 
@@ -138,16 +170,27 @@ begin
     BLOCK: begin
 	// Fetch message in 512-bit block size
 	// For each of 512-bit block initiate hash value computation
-       
 
+      // 2 blocks computed, go to write state
+      if (current_block == 2) begin
+        state <= WRITE;
+      end
 
+      // first block (first 16 words in w array)
+      else if (current_block == 0) begin
+        
+        // compute
+        state <= COMPUTE;
+      end
 
-   
+      // second block (last 4 words + padding)
+      else begin
+        
+        // pad first
 
-
-
-
-    
+        // compute
+        state <= COMPUTE;
+      end
 
     end
 
@@ -156,31 +199,76 @@ begin
     // there are still number of message blocks available in memory otherwise
     // move to WRITE stage
     COMPUTE: begin
-	// 64 processing rounds steps for 512-bit block 
-        if (i <= 64) begin
-            {a, b, c, d, e, f, g, h} <= sha256_op (a, b, c, d, e, f, g, h, w, k);
-            
+      // word expansion
 
+      logic [31:0] S1, S0;
 
-
-
-
-
-
-
-
-
-
-
+      for (int t = 0; t < 64; t++) begin
+        if (t < 16) begin
+          w[t] = message[t];
+        end 
+        
+        else begin
+          S0 = rightrotate(w[t-15], 7) ^ rightrotate(w[t-15], 18) ^ (w[t-15] >> 3);
+          S1 = rightrotate(w[t-2], 17) ^ rightrotate(w[t-2], 19) ^ (w[t-2] >> 10);
+          w[t] = w[t-16] + S0 + w[t-7] + S1;
         end
+      end  
+
+	    // 64 processing rounds steps for 512-bit block 
+      for (int i = 0; i < 64; i++) begin
+            {a, b, c, d, e, f, g, h} <= sha256_op (a, b, c, d, e, f, g, h, w[i], i);
+
+      end
+
+      // increment block #
+      current_block <= current_block + 1;
+
+      // update current hash with new hash values
+      h0 <= h0 + a;
+      h1 <= h1 + b;
+      h2 <= h2 + c;
+      h3 <= h3 + d;
+      h4 <= h4 + e;
+      h5 <= h5 + f;
+      h6 <= h6 + g;
+      h7 <= h6 + h;
+
+      state <= BLOCK;
+
     end
 
     // h0 to h7 each are 32 bit hashes, which makes up total 256 bit value
     // h0 to h7 after compute stage has final computed hash value
     // write back these h0 to h7 to memory starting from output_addr
     WRITE: begin
-   
+      cur_we <= 1;
 
+      // from slides
+
+      mem_addr <= output_addr;
+      mem_write_data <= h0;
+
+      mem_addr <= output_addr + 1;
+      mem_write_data <= h1;
+
+      mem_addr <= output_addr + 2;
+      mem_write_data <= h2;
+
+      mem_addr <= output_addr + 3;
+      mem_write_data <= h3;
+
+      mem_addr <= output_addr + 4;
+      mem_write_data <= h4;
+
+      mem_addr <= output_addr + 5 ;
+      mem_write_data <= h5;
+
+      mem_addr <= output_addr + 6 ;
+      mem_write_data <= h6;
+
+      mem_addr <= output_addr + 7;
+      mem_write_data <= h7;
 
     end
    endcase
