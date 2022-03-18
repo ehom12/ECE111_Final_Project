@@ -118,6 +118,14 @@ begin
         h6 <= 32'h1f83d9ab;
         h7 <= 32'h5be0cd19;
 
+        a <= 32'h6a09e667;
+        b <= 32'hbb67ae85;
+        c <= 32'h3c6ef372;
+        d <= 32'ha54ff53a;
+        e <= 32'h510e527f;
+        f <= 32'h9b05688c;
+        g <= 32'h1f83d9ab;
+        h <= 32'h5be0cd19;
 
 
 
