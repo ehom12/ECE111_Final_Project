@@ -23,3 +23,8 @@ simplified_sha256/simulation/*
 simplified_sha256/simplified_sha256_nativelink_simulation.rpt
 simplified_sha256/db/simplified_sha256.hif
 
+*.qpf
+*.qsf
+*/db/*
+*/output_files/*
+*.bak
