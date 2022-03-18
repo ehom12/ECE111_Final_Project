@@ -61,7 +61,7 @@ begin
     S1 = rightrotate(e, 6) ^ rightrotate(e, 11) ^ rightrotate(e, 25);
     // Student to add remaning code below
     // Refer to SHA256 discussion slides to get logic for this function
-    ch = (e & f) ^ ((~ e) & g)
+    ch = (e & f) ^ ((~ e) & g);
     t1 = h + S1 + ch + k[t] + w[t];
     S0 = rightrotate(a, 2) ^ rightrotate(a, 13) ^ rightrotate (a, 22);
     maj = (a & b) ^ (a & c) ^ (b & c);
@@ -109,6 +109,14 @@ begin
     IDLE: begin 
        if(start) begin
        // Student to add rest of the code  
+        h0 <= 32'h6a09e667;
+        h1 <= 32'hbb67ae85;
+        h2 <= 32'h3c6ef372;
+        h3 <= 32'ha54ff53a;
+        h4 <= 32'h510e527f;
+        h5 <= 32'h9b05688c;
+        h6 <= 32'h1f83d9ab;
+        h7 <= 32'h5be0cd19;
 
 
 
@@ -142,8 +150,8 @@ begin
     COMPUTE: begin
 	// 64 processing rounds steps for 512-bit block 
         if (i <= 64) begin
-
-
+            {a, b, c, d, e, f, g, h} <= sha256_op (a, b, c, d, e, f, g, h, w, k[t]);
+            
 
 
 
