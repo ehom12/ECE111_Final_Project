@@ -29,3 +29,4 @@ simplified_sha256/db/simplified_sha256.hif
 */output_files/*
 *.bak
 simplified_sha256/db/simplified_sha256.hif
+*.qws
