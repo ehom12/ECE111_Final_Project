@@ -162,14 +162,14 @@ begin
         h6 <= 32'h1f83d9ab;
         h7 <= 32'h5be0cd19;
 
-        a <= 32'h00000000;
-        b <= 32'h00000000;
-        c <= 32'h00000000;
-        d <= 32'h00000000;
-        e <= 32'h00000000;
-        f <= 32'h00000000;
-        g <= 32'h00000000;
-        h <= 32'h00000000;
+        a <= 32'h6a09e667;
+        b <= 32'hbb67ae85;
+        c <= 32'h3c6ef372;
+        d <= 32'ha54ff53a;
+        e <= 32'h510e527f;
+        f <= 32'h9b05688c;
+        g <= 32'h1f83d9ab;
+        h <= 32'h5be0cd19;
 
         // assign and initialize variables
         current_block <= 0;
@@ -214,7 +214,7 @@ begin
       else begin
         
         // realign for mem_addr continuous assignment
-        offset <= offset - 1;
+        offset <= 0;
         state <= BLOCK;
       end
 
@@ -355,7 +355,7 @@ begin
         h4 <= h4 + e;
         h5 <= h5 + f;
         h6 <= h6 + g;
-        h7 <= h6 + h;
+        h7 <= h7 + h;
 
         state <= BLOCK;
       end
@@ -370,64 +370,64 @@ begin
     
       // write enable
       cur_we <= 1'b1;
-
+     
       // from slides
-
-      case (j)
+      cur_addr <= output_addr - 1;
+      case (offset)
 
         0: begin
-          cur_addr <= output_addr;
+          
           cur_write_data <= h0;
-          j <= j + 1;
+          offset <= offset + 1;
           state <= WRITE;
         end
 
         1: begin
-          cur_addr <= output_addr + 1;
+        //  cur_addr <= output_addr ;
           cur_write_data <= h1;
-          j <= j + 1;
+          offset <= offset + 1;
           state <= WRITE;
         end
 
         2: begin 
-          cur_addr <= output_addr + 2;
+       //   cur_addr <= output_addr + 1;
           cur_write_data <= h2;
-          j <= j + 1;
+          offset <= offset + 1;
           state <= WRITE;
         end
 
         3: begin
-          cur_addr <= output_addr + 3;
+       //   cur_addr <= output_addr + 2;
           cur_write_data <= h3;
-          j <= j + 1;
+          offset <= offset + 1;
           state <= WRITE;
         end
 
         4: begin
-          cur_addr <= output_addr + 4;
+       //   cur_addr <= output_addr + 3;
           cur_write_data <= h4;
-          j <= j + 1;
+          offset <= offset + 1;
           state <= WRITE;
         end
 
         5: begin
-          cur_addr <= output_addr + 5;
+        //  cur_addr <= output_addr + 4;
           cur_write_data <= h5;
-          j <= j + 1;
+          offset <= offset + 1;
           state <= WRITE;
         end
 
         6: begin
-          cur_addr <= output_addr + 6;
+       //   cur_addr <= output_addr + 5;
           cur_write_data <= h6;
-          j <= j + 1;
+         offset <= offset + 1;
           state <= WRITE;
         end
 
         7: begin
-          cur_addr <= output_addr + 7;
+        //  cur_addr <= output_addr + 6;
           cur_write_data <= h7;
-          j <= j + 1;
+         offset <= offset + 1;
           state <= WRITE;
         end
 
