@@ -282,6 +282,15 @@ begin
         // size
         w[15] <= 32'd640;
 
+        // re-initialize a-h with h0-h7 values before compute
+        a <= h0;
+        b <= h1;
+        c <= h2;
+        d <= h3;
+        e <= h4;
+        f <= h5;
+        g <= h6;
+        h <= h7;
 /*
         // word expansion
         for (int t = 0; t < 64; t++) begin
