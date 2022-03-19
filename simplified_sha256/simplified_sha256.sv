@@ -211,7 +211,6 @@ begin
 
       // 2 blocks computed, go to write state
       if (current_block == num_blocks) begin
-        j <= 0;
         state <= WRITE;
       end
 
