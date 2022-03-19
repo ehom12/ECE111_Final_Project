@@ -91,7 +91,7 @@ function logic [255:0] sha256_op(input logic [31:0] a, b, c, d, e, f, g, h, w,
     // Refer to SHA256 discussion slides to get logic for this function
     ch = (e & f) ^ ((~ e) & g);
     // slides uses w[t], testbench uses w? 
-    t1 = h + S1 + ch + k[t] + w[t];
+    t1 = h + S1 + ch + k[t] + w;
     S0 = rightrotate(a, 2) ^ rightrotate(a, 13) ^ rightrotate (a, 22);
     maj = (a & b) ^ (a & c) ^ (b & c);
     t2 = S0 + maj;
@@ -218,6 +218,7 @@ begin
 
       // 2 blocks computed, go to write state
       if (current_block == num_blocks) begin
+        j <= 0;
         state <= WRITE;
       end
 
@@ -354,7 +355,6 @@ begin
       cur_we <= 1'b1;
 
       // from slides
-      j <= 0;
 
       case (j)
 
