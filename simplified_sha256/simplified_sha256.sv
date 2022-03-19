@@ -68,6 +68,16 @@ function logic [15:0] determine_num_blocks(input logic [31:0] size);
 
 endfunction
 
+
+// word expansion function
+
+function logic [31:0] word_expansion(logic[7:0] t);
+  logic [31:0] s1, s0;
+  s0 = rightrotate(w[t-15], 7) ^ rightrotate(w[t-15], 18) ^ (w[t-15] >> 3);
+  s1 = rightrotate(w[t-2], 17) ^ rightrotate(w[t-2], 19) ^ (w[t-2] >> 10);
+  word_expansion = w[t-16] + s0 + w[t-7] + s1;
+endfunction
+
 // SHA256 hash round
 
 // code from slides
@@ -80,8 +90,8 @@ function logic [255:0] sha256_op(input logic [31:0] a, b, c, d, e, f, g, h, w,
     // Student to add remaning code below
     // Refer to SHA256 discussion slides to get logic for this function
     ch = (e & f) ^ ((~ e) & g);
-    // slides uses w[t], testbench uses w? it doesn't compile if w[t] is used??
-    t1 = h + S1 + ch + k[t] + w;
+    // slides uses w[t], testbench uses w? 
+    t1 = h + S1 + ch + k[t] + w[t];
     S0 = rightrotate(a, 2) ^ rightrotate(a, 13) ^ rightrotate (a, 22);
     maj = (a & b) ^ (a & c) ^ (b & c);
     t2 = S0 + maj;
@@ -168,16 +178,24 @@ begin
 
     READ: begin
       // https://piazza.com/class/kxt74scerj075n?cid=427
-      if(offset < 20) begin  
-        // Read message word from testbench memory and store it in message array in chunks of 32 bits
-        // mem_read_data will have 32 bits of message word which is coming from dpsram memory in testbench
-        // using "offset" index variable, store 32-bit message word in each "message" array location.    
-        message[offset] <= mem_read_data;
-        // Increment memory address to fetch next block 
-        offset <= offset + 1;
-        // continue to set mem_we = 0 to read memory until all 20 words are read
-        cur_we <= 1'b0; 
-        state <= READ;
+      if(offset <= 20) begin  
+
+        if (offset == 0) begin 
+          offset <= offset + 1;
+          state <= READ;
+        end
+
+        else begin
+          // Read message word from testbench memory and store it in message array in chunks of 32 bits
+          // mem_read_data will have 32 bits of message word which is coming from dpsram memory in testbench
+          // using "offset" index variable, store 32-bit message word in each "message" array location.    
+          message[offset - 1] <= mem_read_data;
+          // Increment memory address to fetch next block 
+          offset <= offset + 1;
+          // continue to set mem_we = 0 to read memory until all 20 words are read
+          cur_we <= 1'b0; 
+          state <= READ;
+        end
       end
 
       else begin
@@ -193,7 +211,8 @@ begin
 	// Fetch message in 512-bit block size
 	// For each of 512-bit block initiate hash value computation
 
-      logic [31:0] s1, s0;
+      //logic [31:0] s1, s0;
+
       // assign i before compute
       i <= 0;
 
@@ -208,6 +227,7 @@ begin
           w[t] <= message[t];
         end
 
+/*
         // word expansion
         for (int t = 0; t < 64; t++) begin
           if (t < 16) begin
@@ -220,7 +240,7 @@ begin
             w[t] <= w[t-16] + s0 + w[t-7] + s1;
           end
         end  
-
+*/
         state <= COMPUTE;
       end
 
@@ -245,6 +265,7 @@ begin
         // size
         w[15] <= 32'd640;
 
+/*
         // word expansion
         for (int t = 0; t < 64; t++) begin
           if (t < 16) begin
@@ -257,7 +278,7 @@ begin
             w[t] <= w[t-16] + s0 + w[t-7] + s1;
           end
         end  
-
+*/
         // compute
         state <= COMPUTE;
       end
@@ -273,6 +294,7 @@ begin
 	    // 64 processing rounds steps for 512-bit block 
       if (i <= 64) begin
 
+/*
         // use tstep because non blocking assignments get values after current cycle
         if (tstep < 0) begin
           i <= i + 1;
@@ -286,8 +308,25 @@ begin
           state <= COMPUTE;
         end
       end
+*/
+        if (i < 16) begin
+          {a,b,c,d,e,f,g,h} <= sha256_op(a, b, c, d, e, f, g, h, w[i], i);
+        end
 
-      else begin
+        else begin
+            w[i] <= word_expansion(i);
+            if(i != 16) {a,b,c,d,e,f,g,h} <= sha256_op(a, b, c, d, e, f, g, h, w[i-1], i-1);
+            // don't do anything on 16th iteration as w[16] word is not available yet so do sha_op for w[16] on 17th cycle/iteration. sha_op for w[17] is done on 18th cycle iteration and so one. 
+        end
+
+        // increment then compute
+        i <= i + 1;
+        state <= COMPUTE;
+
+      end
+
+
+      else begin 
         // increment block #
         current_block <= current_block + 1;
 
