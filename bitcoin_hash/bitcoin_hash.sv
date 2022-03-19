@@ -194,7 +194,7 @@ always_ff @(posedge clk, negedge reset_n) begin
 
 		BLOCK1: begin
 
-  			// create block and move to COMPUTE 1
+ 			// create block and move to COMPUTE 1
 			for (int t = 0; t < 16; t++) begin
 				w[t] <= message[t];
 			end
@@ -205,7 +205,7 @@ always_ff @(posedge clk, negedge reset_n) begin
 
 		COMPUTE1: begin
 
-  			// word expansion and perform sha_op similar to what you have today for part-1 simplified sha256 as for block-1, this code is similar to what you have for block1 in simplified sha256
+ 			// word expansion and perform sha_op similar to what you have today for part-1 simplified sha256 as for block-1, this code is similar to what you have for block1 in simplified sha256
 			// 64 processing rounds steps for 512-bit block 
 			if (i <= 64) begin
 				if (i < 16) begin
@@ -263,7 +263,7 @@ always_ff @(posedge clk, negedge reset_n) begin
 			// size
 			w[15] <= 32'd640;
 			
-  			// create block 2 and prepare a through h hashes,  which is now assigned hash h0 to h7 from first block
+			// create block 2 and prepare a through h hashes,  which is now assigned hash h0 to h7 from first block
 			for (int n = 1; n < num_nonces; n++) begin
 				h0[n] <= h0[0];
 				h1[n] <= h1[0];
@@ -285,7 +285,7 @@ always_ff @(posedge clk, negedge reset_n) begin
 				h[n] <= h7[0];
 			end
 			
- 			// then move to COMPUTE2
+			// then move to COMPUTE2
 			state <= COMPUTE2;
 
 		end
@@ -293,43 +293,43 @@ always_ff @(posedge clk, negedge reset_n) begin
 		
 		COMPUTE2: begin
 
-  			// Iterate 16 times for each nonce
+ 			// Iterate 16 times for each nonce
 
 			for (int n = 0; n < num_nonces; n++)begin
-  				if(i < 64) begin
-   				if (i < 16) begin
+ 				if(i < 64) begin
+  				if (i < 16) begin
 						wt <= (i == 3) ? n : w[i]; 
-  						{a[n],b[n],c[n],d[n],e[n],f[n],g[n],h[n]} <= sha256_op(a[n], b[n], c[n], d[n], e[n], f[n], g[n], h[n], wt, i);
-   				end
-   				else begin
-      				w[i] <= word_expansion(i);
+ 						{a[n],b[n],c[n],d[n],e[n],f[n],g[n],h[n]} <= sha256_op(a[n], b[n], c[n], d[n], e[n], f[n], g[n], h[n], wt, i);
+  				end
+  				else begin
+     				w[i] <= word_expansion(i);
 						if(i != 16) {a[n],b[n],c[n],d[n],e[n],f[n],g[n],h[n]} <= sha256_op(a[n], b[n], c[n], d[n], e[n], f[n], g[n], h[n], w[i-1], i-1);
-   				end
+  				end
 					i <= i + 1;
 					state <= COMPUTE2;
 				end
 
-   			else begin
-   				h0[n] <= h0[n] + a[n];
-   				h1[n] <= h1[n] + b[n];
-					h2[n] <= h2[n] + c[n];
-   				h3[n] <= h3[n] + d[n];
-					h4[n] <= h4[n] + e[n];
-   				h5[n] <= h5[n] + f[n];
-					h6[n] <= h6[n] + g[n];
-   				h7[n] <= h7[n] + h[n];
+  			else begin
+          h0[n] <= h0[n] + a[n];
+          h1[n] <= h1[n] + b[n];
+          h2[n] <= h2[n] + c[n];
+          h3[n] <= h3[n] + d[n];
+          h4[n] <= h4[n] + e[n];
+          h5[n] <= h5[n] + f[n];
+          h6[n] <= h6[n] + g[n];
+          h7[n] <= h7[n] + h[n];
 
-   				state <= BLOCK3;
-   				i <= 0;
-   			end
+          state <= BLOCK3;
+          i <= 0;
+  			end
 			end
 			
 		end
 
 		
-		BLOCK3: begin 
+		BLOCK3: begin
 
-  			// H0 to H7 from phase 2
+ 			// H0 to H7 from phase 2
 			w[0] <= h0[0];
 			w[1] <= h1[0];
 			w[2] <= h2[0];
@@ -350,7 +350,7 @@ always_ff @(posedge clk, negedge reset_n) begin
 			// size
 			w[15] <= 32'd256;
 			
-  			// create block 2 and prepare a through h hashes, which is original h0 to h7
+ 			// create block 2 and prepare a through h hashes, which is original h0 to h7
 			for (int n = 1; n < num_nonces; n++) begin
 				h0[n] <= 32'h6a09e667;
 				h1[n] <= 32'hbb67ae85;
@@ -372,34 +372,34 @@ always_ff @(posedge clk, negedge reset_n) begin
 				h[n] <= h7[n];
 			end
 			
- 			// then move to COMPUTE3	 
+			// then move to COMPUTE3	 
 			state <= COMPUTE3;
 			
 		end
 
 
 		COMPUTE3: begin
-  			for (int n = 0; n < num_nonces; n++)begin
-  				if(i < 64) begin
-   				if (i < 16) begin
-  						{a[n],b[n],c[n],d[n],e[n],f[n],g[n],h[n]} <= sha256_op(a[n], b[n], c[n], d[n], e[n], f[n], g[n], h[n], w[i], i);
-   				end
-   				else begin
+ 			for (int n = 0; n < num_nonces; n++)begin
+ 				if(i < 64) begin
+  				if (i < 16) begin
+ 						{a[n],b[n],c[n],d[n],e[n],f[n],g[n],h[n]} <= sha256_op(a[n], b[n], c[n], d[n], e[n], f[n], g[n], h[n], w[i], i);
+  				end
+  				else begin
 						w[i] <= word_expansion(i);
 						if(i != 16) {a[n],b[n],c[n],d[n],e[n],f[n],g[n],h[n]} <= sha256_op(a[n], b[n], c[n], d[n], e[n], f[n], g[n], h[n], w[i-1], i-1);
-   				end
-      			i <= i + 1;
-     				state <= COMPUTE3;
-   			end
-   			else begin
-					h0[n] <= h0[n] + a[n];
-   				h1[n] <= h1[n] + b[n];
+  				end
+     			i <= i + 1;
+  				state <= COMPUTE3;
+    		end
+    		else begin
+					h0[n] <= h0[n] + a[n];		
+          h1[n] <= h1[n] + b[n];
 					h2[n] <= h2[n] + c[n];
-   				h3[n] <= h3[n] + d[n];
+  				h3[n] <= h3[n] + d[n];
 					h4[n] <= h4[n] + e[n];
-   				h5[n] <= h5[n] + f[n];
+          h5[n] <= h5[n] + f[n];
 					h6[n] <= h6[n] + g[n];
-   				h7[n] <= h7[n] + h[n];
+    			h7[n] <= h7[n] + h[n];
 					
 					state <= WRITE;
 					i <= 0;

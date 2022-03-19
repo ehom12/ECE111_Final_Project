@@ -275,6 +275,7 @@ begin
             w[i] <= word_expansion(i);
             if(i != 16) {a,b,c,d,e,f,g,h} <= sha256_op(a, b, c, d, e, f, g, h, w[i-1], i-1);
             // don't do anything on 16th iteration as w[16] word is not available yet so do sha_op for w[16] on 17th cycle/iteration. sha_op for w[17] is done on 18th cycle iteration and so one. 
+            else i <= i + 0; // prevent latch 
         end
 
         // increment then compute
