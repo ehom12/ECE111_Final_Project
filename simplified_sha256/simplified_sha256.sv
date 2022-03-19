@@ -54,8 +54,6 @@ function logic [15:0] determine_num_blocks(input logic [31:0] size);
   // dont hardcode the value "2" 
   logic [15:0] blocks;
   // Student to add function implementation
-
-
   if (((size * 32) % 512) != 0) begin
     blocks = ((size * 32) / 512); // if 640, blocks = 1
     determine_num_blocks = blocks + 1; // then blocks = 2 (desired number)
@@ -68,9 +66,7 @@ function logic [15:0] determine_num_blocks(input logic [31:0] size);
 
 endfunction
 
-
 // word expansion function
-
 function logic [31:0] word_expansion(logic[7:0] t);
   logic [31:0] s1, s0;
   s0 = rightrotate(w[t-15], 7) ^ rightrotate(w[t-15], 18) ^ (w[t-15] >> 3);
@@ -79,27 +75,11 @@ function logic [31:0] word_expansion(logic[7:0] t);
 endfunction
 
 // SHA256 hash round
-
 // code from slides
 function logic [255:0] sha256_op(input logic [31:0] a, b, c, d, e, f, g, h, w,
                                  input logic [7:0] t);
     logic [31:0] S1, S0, ch, maj, t1, t2; // internal signals
   begin
-    
-    // order matters?
-    // testbench order
-    /*
-    S1 = rightrotate(e, 6) ^ rightrotate(e, 11) ^ rightrotate(e, 25);
-    // Student to add remaning code below
-    // Refer to SHA256 discussion slides to get logic for this function
-    ch = (e & f) ^ ((~ e) & g);
-    // slides uses w[t], testbench uses w? 
-    t1 = h + S1 + ch + k[t] + w;
-    S0 = rightrotate(a, 2) ^ rightrotate(a, 13) ^ rightrotate (a, 22);
-    maj = (a & b) ^ (a & c) ^ (b & c);
-    t2 = S0 + maj;
-    sha256_op = {t1 + t2, a, b, c, d + t1, e, f, g};
-    */
 
     S0 = rightrotate(a, 2) ^ rightrotate(a, 13) ^ rightrotate (a, 22);
     maj = (a & b) ^ (a & c) ^ (b & c);
@@ -212,7 +192,6 @@ begin
       end
 
       else begin
-        
         // realign for mem_addr continuous assignment
         offset <= 0;
         state <= BLOCK;
@@ -226,8 +205,6 @@ begin
     BLOCK: begin
 	// Fetch message in 512-bit block size
 	// For each of 512-bit block initiate hash value computation
-
-      //logic [31:0] s1, s0;
 
       // assign i before compute
       i <= 0;
@@ -243,21 +220,6 @@ begin
         for (int t = 0; t < 16; t++) begin
           w[t] <= message[t];
         end
-
-/*
-        // word expansion
-        for (int t = 0; t < 64; t++) begin
-          if (t < 16) begin
-            w[t] <= w[t];
-          end 
-        
-          else begin
-            s0 <= rightrotate(w[t-15], 7) ^ rightrotate(w[t-15], 18) ^ (w[t-15] >> 3);
-            s1 <= rightrotate(w[t-2], 17) ^ rightrotate(w[t-2], 19) ^ (w[t-2] >> 10);
-            w[t] <= w[t-16] + s0 + w[t-7] + s1;
-          end
-        end  
-*/
         state <= COMPUTE;
       end
 
@@ -291,20 +253,7 @@ begin
         f <= h5;
         g <= h6;
         h <= h7;
-/*
-        // word expansion
-        for (int t = 0; t < 64; t++) begin
-          if (t < 16) begin
-            w[t] <= w[t];
-          end 
-        
-          else begin
-            s0 <= rightrotate(w[t-15], 7) ^ rightrotate(w[t-15], 18) ^ (w[t-15] >> 3);
-            s1 <= rightrotate(w[t-2], 17) ^ rightrotate(w[t-2], 19) ^ (w[t-2] >> 10);
-            w[t] <= w[t-16] + s0 + w[t-7] + s1;
-          end
-        end  
-*/
+
         // compute
         state <= COMPUTE;
       end
@@ -319,22 +268,6 @@ begin
 
 	    // 64 processing rounds steps for 512-bit block 
       if (i <= 64) begin
-
-/*
-        // use tstep because non blocking assignments get values after current cycle
-        if (tstep < 0) begin
-          i <= i + 1;
-          state <= COMPUTE;
-        end
-
-        else begin
-          {a, b, c, d, e, f, g, h} <= sha256_op (a, b, c, d, e, f, g, h, w[tstep], tstep);
-          // increment i
-          i <= i + 1;
-          state <= COMPUTE;
-        end
-      end
-*/
         if (i < 16) begin
           {a,b,c,d,e,f,g,h} <= sha256_op(a, b, c, d, e, f, g, h, w[i], i);
         end
@@ -376,7 +309,6 @@ begin
     // write back these h0 to h7 to memory starting from output_addr
     WRITE: begin
 
-    
       // write enable
       cur_we <= 1'b1;
      
@@ -392,49 +324,42 @@ begin
         end
 
         1: begin
-        //  cur_addr <= output_addr ;
           cur_write_data <= h1;
           offset <= offset + 1;
           state <= WRITE;
         end
 
         2: begin 
-       //   cur_addr <= output_addr + 1;
           cur_write_data <= h2;
           offset <= offset + 1;
           state <= WRITE;
         end
 
         3: begin
-       //   cur_addr <= output_addr + 2;
           cur_write_data <= h3;
           offset <= offset + 1;
           state <= WRITE;
         end
 
         4: begin
-       //   cur_addr <= output_addr + 3;
           cur_write_data <= h4;
           offset <= offset + 1;
           state <= WRITE;
         end
 
         5: begin
-        //  cur_addr <= output_addr + 4;
           cur_write_data <= h5;
           offset <= offset + 1;
           state <= WRITE;
         end
 
         6: begin
-       //   cur_addr <= output_addr + 5;
           cur_write_data <= h6;
          offset <= offset + 1;
           state <= WRITE;
         end
 
         7: begin
-        //  cur_addr <= output_addr + 6;
           cur_write_data <= h7;
          offset <= offset + 1;
           state <= WRITE;
