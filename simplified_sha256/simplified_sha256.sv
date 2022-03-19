@@ -85,7 +85,10 @@ function logic [255:0] sha256_op(input logic [31:0] a, b, c, d, e, f, g, h, w,
                                  input logic [7:0] t);
     logic [31:0] S1, S0, ch, maj, t1, t2; // internal signals
   begin
-
+    
+    // order matters?
+    // testbench order
+    /*
     S1 = rightrotate(e, 6) ^ rightrotate(e, 11) ^ rightrotate(e, 25);
     // Student to add remaning code below
     // Refer to SHA256 discussion slides to get logic for this function
@@ -96,6 +99,16 @@ function logic [255:0] sha256_op(input logic [31:0] a, b, c, d, e, f, g, h, w,
     maj = (a & b) ^ (a & c) ^ (b & c);
     t2 = S0 + maj;
     sha256_op = {t1 + t2, a, b, c, d + t1, e, f, g};
+    */
+
+    S0 = rightrotate(a, 2) ^ rightrotate(a, 13) ^ rightrotate (a, 22);
+    maj = (a & b) ^ (a & c) ^ (b & c);
+    t2 = S0 + maj;
+    S1 = rightrotate(e, 6) ^ rightrotate(e, 11) ^ rightrotate(e, 25);
+    ch = (e & f) ^ ((~ e) & g);
+    t1 = h + S1 + ch + k[t] + w;
+    sha256_op = {t1 + t2, a, b, c, d + t1, e, f, g};
+
   end
 endfunction
 
@@ -149,14 +162,14 @@ begin
         h6 <= 32'h1f83d9ab;
         h7 <= 32'h5be0cd19;
 
-        a <= 0;
-        b <= 0;
-        c <= 0;
-        d <= 0;
-        e <= 0;
-        f <= 0;
-        g <= 0;
-        h <= 0;
+        a <= 32'h00000000;
+        b <= 32'h00000000;
+        c <= 32'h00000000;
+        d <= 32'h00000000;
+        e <= 32'h00000000;
+        f <= 32'h00000000;
+        g <= 32'h00000000;
+        h <= 32'h00000000;
 
         // assign and initialize variables
         current_block <= 0;
@@ -199,6 +212,9 @@ begin
       end
 
       else begin
+        
+        // realign for mem_addr continuous assignment
+        offset <= offset - 1;
         state <= BLOCK;
       end
 
@@ -351,6 +367,7 @@ begin
     // write back these h0 to h7 to memory starting from output_addr
     WRITE: begin
 
+    
       // write enable
       cur_we <= 1'b1;
 
